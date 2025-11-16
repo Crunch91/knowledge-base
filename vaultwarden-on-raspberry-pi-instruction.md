@@ -64,12 +64,26 @@ show created config
 ```
 </details>
 
-
+TODO: UPLOAD YML TO THIS REPO
 
 create nginx container for reverse proxy
 ```
 sudo docker compose -f nginx.yml up -d
 ```
+
+configure nginx
+we need to copy the default config of nginx because we bind-mounted `/etc/nginx/conf.d/` and this prevents nginx to create any files in its config folder because "it is managed by the host system".
+
+TODO: UPLOAD DEFAULT CONFIGS TO THIS REPO
+TODO: UPLOAD DEFAULT index.html TO THIS REPO
+
+by default you can't copy files to `/srv`. Change permissions and then copy it (e.g. with WinSCP)
+```
+sudo chmod 777 /srv/nginx/conf
+sudo chmod 777 /srv/nginx/html
+```
+
+TODO: UPLOAD YML TO THIS REPO
 
 create bitwarden container
 ```
