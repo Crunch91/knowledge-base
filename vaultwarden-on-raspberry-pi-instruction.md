@@ -64,6 +64,14 @@ show created config
 ```
 </details>
 
+TODO: UPLOAD Dockerfile TO THIS REPO
+
+create own certbot image based on official certbot image and add a additional command
+
+```
+docker build -t my-certbot-strato:latest .
+```
+
 TODO: UPLOAD YML TO THIS REPO
 
 create nginx container for reverse proxy
@@ -71,7 +79,29 @@ create nginx container for reverse proxy
 sudo docker compose -f nginx.yml up -d
 ```
 
-configure nginx
+### Automated Letsencrypt Certificates - Strato as a DNS Provider
+Strato doesn't offer an official API for DNS, which makes fully automated DNS-01 solutions somewhat tricky. However, there are community projects like `certbot-dns-strato` that log into the Strato customer center and set the TXT records for you, allowing you to automate DNS-01.
+
+Alternatively, you can switch your domain's nameservers to a DNS provider with an official ACME API (e.g., deSEC, Cloudflare, Hetzner DNS) and use an official DNS plugin type from Certbot or acme.sh.
+
+copy strato.ini for DNS-01 acme challenge to `/srv/letsencrypt/strato.ini` (so it is accessible by the container on `etc/letsencrypt/strato.ini`)
+
+set permission very restrictiv because it contains passwords
+```
+sudo chmod 600 /srv/letsencrypt/strato.ini
+```
+
+copy `domain.txt` file
+copy `request-cert.sh`
+
+run certification script. The command creates a certification per domain. It has to be done only once because after it `renew` will take place
+```
+chmod +x /srv/request-cert.sh
+/srv/request-cert.sh
+```
+
+### configure nginx
+
 we need to copy the default config of nginx because we bind-mounted `/etc/nginx/conf.d/` and this prevents nginx to create any files in its config folder because "it is managed by the host system".
 
 TODO: UPLOAD DEFAULT CONFIGS TO THIS REPO
@@ -89,8 +119,3 @@ create bitwarden container
 ```
 sudo docker compose -f bitwarden.yml up -d
 ```
-
-https://www.google.com/search?q=raspberry+pi+vaultwarden+install&sca_esv=ad5d78fe25a26ce1&ei=hAIWacCfMqT_7_UPxdei0Qs&ved=0ahUKEwjA8by_we-QAxWk_7sIHcWrKLoQ4dUDCBE&uact=5&oq=raspberry+pi+vaultwarden+install&gs_lp=Egxnd3Mtd2l6LXNlcnAiIHJhc3BiZXJyeSBwaSB2YXVsdHdhcmRlbiBpbnN0YWxsMgYQABgWGB4yBRAAGO8FMgUQABjvBTIFEAAY7wVIhDZQvhpY5DRwBngBkAEAmAF5oAGcB6oBAzkuMrgBA8gBAPgBAZgCEaACwAfCAgoQABhHGNYEGLADwgIIEAAYBxgeGBPCAgcQABiABBgTwgIGEAAYHhgTwgIIEAAYCBgeGBPCAgoQABgIGB4YExgKwgIIEAAYFhgeGBOYAwCIBgGQBgiSBwQxNC4zoAfXI7IHAzguM7gHsgfCBwQwLjE3yAca&sclient=gws-wiz-serp
-https://www.heise.de/select/ct/2021/9/2105509303473355898
-https://getupnote.com/share/notes/caLALNnK5LMmACDgfkOdFLDxoSt1/1848505a-968b-49bb-b69d-d5bc6aa937ab
-https://github.com/ttionya/vaultwarden-backup?tab=readme-ov-file#configure-and-check
