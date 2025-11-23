@@ -62,6 +62,22 @@ show created config
      ttionya/vaultwarden-backup:latest \
      rclone config show 
 ```
+
+restore command
+
+```
+sudo mkdir -p /srv/bitwarden-restore
+sudo cp /pfad/zu/backup.20250121.zip /srv/bitwarden-restore/
+cd /srv/bitwarden-restore
+
+sudo docker run --rm -it \
+--mount type=bind,source=/srv/bitwarden/data,target=/data/ \
+--mount type=bind,source=$(pwd),target=/bitwarden/restore/ \
+-e DATA_DIR="/data" \
+ ttionya/vaultwarden-backup:latest restore \
+--zip-file backup.20250121.zip \
+--password 'WHEREISMYPASSWORD'
+```
 </details>
 
 TODO: UPLOAD Dockerfile TO THIS REPO
@@ -117,5 +133,6 @@ TODO: UPLOAD YML TO THIS REPO
 
 create bitwarden container
 ```
+sudo mkdir -p /srv/bitwarden/data
 sudo docker compose -f bitwarden.yml up -d
 ```
