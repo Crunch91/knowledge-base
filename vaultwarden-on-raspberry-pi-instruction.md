@@ -8,28 +8,28 @@
 
 update system
 
-```
+```bash
 sudo apt update && sudo apt upgrade -y && sudo apt autoclean && sudo reboot
 ```
 
 install docker
-```
+```bash
 sudo apt install docker.io -y
 ```
 
 docker autostart on boot
-```
+```bash
 sudo systemctl enable --now docker
 ```
 
 install docker compose
-```
+```bash
 sudo apt install docker-compose -y
 ```
 # vaultwarden in docker
 
 create folder
-```
+```bash
 sudo mkdir /home/pi/docker/nginx # put your yml file here
 sudo mkdir /home/pi/docker/bitwarden # put your yml file here
 sudo mkdir /srv/bitwarden # create this to avoid error on bind-mounted volumes
@@ -40,7 +40,7 @@ sudo mkdir /srv/bitwarden # create this to avoid error on bind-mounted volumes
   
 create rclone config
 
-```yml
+```bash
 docker run --rm -it \
    --mount type=volume,source=bitwarden-rclone-config,target=/config/ \
    ttionya/vaultwarden-backup:latest \
@@ -56,7 +56,7 @@ path to alias: /data
 
 show created config
 
-```yml
+```bash
   docker run --rm -it \
      --mount type=volume,source=bitwarden-rclone-config,target=/config/ \
      ttionya/vaultwarden-backup:latest \
@@ -65,7 +65,7 @@ show created config
 
 restore command
 
-```
+```bash
 sudo mkdir -p /srv/bitwarden-restore
 sudo cp /pfad/zu/backup.20250121.zip /srv/bitwarden-restore/
 cd /srv/bitwarden-restore
@@ -84,14 +84,14 @@ TODO: UPLOAD Dockerfile TO THIS REPO
 
 create own certbot image based on official certbot image and add a additional command
 
-```
+```bash
 docker build -t my-certbot-strato:latest .
 ```
 
 TODO: UPLOAD YML TO THIS REPO
 
 create nginx container for reverse proxy
-```
+```bash
 sudo docker compose -f nginx.yml up -d
 ```
 
@@ -103,7 +103,7 @@ Alternatively, you can switch your domain's nameservers to a DNS provider with a
 copy strato.ini for DNS-01 acme challenge to `/srv/letsencrypt/strato.ini` (so it is accessible by the container on `etc/letsencrypt/strato.ini`)
 
 set permission very restrictiv because it contains passwords
-```
+```bash
 sudo chmod 600 /srv/letsencrypt/strato.ini
 ```
 
@@ -111,7 +111,7 @@ copy `domain.txt` file
 copy `request-cert.sh`
 
 run certification script. The command creates a certification per domain. It has to be done only once because after it `renew` will take place
-```
+```bash
 chmod +x /srv/request-cert.sh
 /srv/request-cert.sh
 ```
@@ -124,7 +124,7 @@ TODO: UPLOAD DEFAULT CONFIGS TO THIS REPO
 TODO: UPLOAD DEFAULT index.html TO THIS REPO
 
 by default you can't copy files to `/srv`. Change permissions and then copy it (e.g. with WinSCP)
-```
+```bash
 sudo chmod 777 /srv/nginx/conf
 sudo chmod 777 /srv/nginx/html
 ```
@@ -132,7 +132,39 @@ sudo chmod 777 /srv/nginx/html
 TODO: UPLOAD YML TO THIS REPO
 
 create bitwarden container
-```
+```bash
 sudo mkdir -p /srv/bitwarden/data
+sudo docker compose -f bitwarden.yml up -d
+```
+
+### update bitwarden
+
+trigger backup manually
+
+```bash
+sudo docker run --rm \
+  --mount type=bind,source=/srv/bitwarden/data,target=/data/ \
+  --mount type=volume,source=bitwarden-rclone-config,target=/config/ \
+  -e DATA_DIR="/data" \
+  ttionya/vaultwarden-backup:latest backup
+```
+
+navigate to bitwarden.yml directory
+```
+cd /home/pi/docker/bitwarden
+```
+
+stop container
+```
+sudo docker compose -f bitwarden.yml down
+```
+
+pull new image
+```
+sudo docker compose -f bitwarden.yml pull
+```
+
+restart container
+```
 sudo docker compose -f bitwarden.yml up -d
 ```
